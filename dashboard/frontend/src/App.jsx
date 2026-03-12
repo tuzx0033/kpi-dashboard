@@ -53,7 +53,7 @@ export default function App() {
       setCompliance(c);
       setLastFetch(s.fetched_at || "");
     } catch (e) {
-      setError("Không kết nối được Go server. Hãy chắc chắn server đang chạy tại http://localhost:8080");
+      setError(`Không kết nối được Go server tại: ${import.meta.env.VITE_API_URL || "http://localhost:8080 (chưa set VITE_API_URL)"}`);
     } finally {
       setLoading(false);
     }
