@@ -151,10 +151,9 @@ export default function DocsPanel() {
         <Table
           headers={["Tình trạng", "TimeFactor", "Ý nghĩa", "Tính toán"]}
           rows={[
-            ["Đúng hạn hoặc sớm",  "1.0", "Không trừ điểm",   "late_days = 0"],
-            ["Trễ 1 – 2 ngày",     "0.9", "Trừ 10% điểm task", "1 ≤ late_days ≤ 2"],
-            ["Trễ 3 – 5 ngày",     "0.8", "Trừ 20% điểm task", "3 ≤ late_days ≤ 5"],
-            ["Trễ > 5 ngày",       "0.6", "Trừ 40% điểm task", "late_days > 5"],
+            ["Đúng hạn hoặc sớm",  "1.0", "Không trừ điểm",        "late_days = 0"],
+            ["Trễ 1 – 2 ngày",     "0.9", "Trừ 10% điểm task",      "1 ≤ late_days ≤ 2"],
+            ["Trễ > 2 ngày",       "0.0", "Không tính điểm task",   "late_days > 2"],
           ]}
           colColors={["#94a3b8", "#06b6d4", "#64748b", "#475569"]}
         />
@@ -201,9 +200,9 @@ export default function DocsPanel() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <Alert icon="📋" color="#a78bfa">
-              <strong>Ví dụ 1 — Task thông thường:</strong><br />
-              Weight=8 · Trễ 4 ngày (TimeFactor=0.8) · Quality=Good (1.0)<br />
-              <span style={{ color: "#93c5fd", fontWeight: 700 }}>Score = 8 × 0.8 × 1.0 = 6.4</span>
+              <strong>Ví dụ 1 — Task trễ 2 ngày:</strong><br />
+              Weight=8 · Trễ 2 ngày (TimeFactor=0.9) · Quality=Good (1.0)<br />
+              <span style={{ color: "#93c5fd", fontWeight: 700 }}>Score = 8 × 0.9 × 1.0 = 7.2</span>
             </Alert>
             <Alert icon="🚀" color="#22c55e">
               <strong>Ví dụ 2 — Task Blocked:</strong><br />

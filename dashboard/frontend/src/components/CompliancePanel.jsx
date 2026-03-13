@@ -338,7 +338,7 @@ function CleanTasksTab({ tasks, search, setSearch, page, setPage, pageSize }) {
   const paged      = filtered.slice(page * pageSize, (page + 1) * pageSize);
   const totalPages = Math.ceil(filtered.length / pageSize);
 
-  const tfColor = tf => tf === 1 ? "#22c55e" : tf >= 0.9 ? "#f59e0b" : tf >= 0.8 ? "#f97316" : "#ef4444";
+  const tfColor = tf => tf === 1 ? "#22c55e" : tf >= 0.9 ? "#f59e0b" : "#ef4444";
   const scoreColor = (score, weight) => {
     if (!score || !weight) return "#64748b";
     const r = score / weight;

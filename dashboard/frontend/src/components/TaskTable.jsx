@@ -18,7 +18,7 @@ function scoreColor(score, weight) {
 }
 
 function tfBadge(tf) {
-  const map = { 1: ["✅", "#22c55e"], 0.9: ["⚠️", "#f59e0b"], 0.8: ["🔴", "#f97316"], 0.6: ["❌", "#ef4444"] };
+  const map = { 1: ["✅", "#22c55e"], 0.9: ["⚠️", "#f59e0b"], 0: ["❌", "#ef4444"] };
   const [icon, color] = map[tf] ?? ["—", "#64748b"];
   return <span style={{ color, fontWeight: 600 }}>{icon} {tf}</span>;
 }

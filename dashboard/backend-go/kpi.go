@@ -200,10 +200,9 @@ func buildTaskRow(t CUTask, lst CUList, weekStart, weekEnd time.Time) TaskRow {
 			row.KpiTimeFactor = 1.0
 		case lateDays <= 2:
 			row.KpiTimeFactor = 0.9
-		case lateDays <= 5:
-			row.KpiTimeFactor = 0.8
 		default:
-			row.KpiTimeFactor = 0.6
+			// Trễ > 2 ngày → không tính điểm TimeFactor
+			row.KpiTimeFactor = 0.0
 		}
 	}
 
@@ -350,7 +349,7 @@ func calcStats(tasks []TaskRow, fetchedAt string, weekStart, weekEnd time.Time) 
 	s := StatsResponse{
 		TotalTasks:     len(tasks),
 		StatusDist:     map[string]int{},
-		TimeFactorDist: map[string]int{"1": 0, "0.9": 0, "0.8": 0, "0.6": 0},
+		TimeFactorDist: map[string]int{"1": 0, "0.9": 0, "0": 0},
 		QualityDist:    map[string]int{},
 		WeekLabel:      weekLabel,
 		FetchedAt:      fetchedAt,

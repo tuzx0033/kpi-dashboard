@@ -12,8 +12,8 @@ import DocsPanel from "./components/DocsPanel";
 
 const PIE_COLORS = ["#3b82f6","#22c55e","#f59e0b","#ef4444","#a78bfa","#06b6d4","#f97316","#ec4899","#84cc16","#64748b"];
 
-const TF_LABELS = { "1.0": "Đúng hạn", "0.9": "Trễ 1-2 ngày", "0.8": "Trễ 3-5 ngày", "0.6": "Trễ >5 ngày" };
-const TF_COLORS = { "1.0": "#22c55e", "0.9": "#f59e0b", "0.8": "#f97316", "0.6": "#ef4444" };
+const TF_LABELS = { "1.0": "Đúng hạn", "0.9": "Trễ 1-2 ngày", "0": "Trễ >2 ngày (0 điểm)" };
+const TF_COLORS = { "1.0": "#22c55e", "0.9": "#f59e0b", "0": "#ef4444" };
 
 function Section({ title, children }) {
   return (

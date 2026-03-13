@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-const TF_LABEL = { 1: "Đúng hạn", 0.9: "Trễ 1-2 ngày", 0.8: "Trễ 3-5 ngày", 0.6: "Trễ >5 ngày" };
+const TF_LABEL = { 1: "Đúng hạn", 0.9: "Trễ 1-2 ngày", 0: "Trễ >2 ngày (0 điểm)" };
 
 export function exportTasksToExcel(tasks, filename = "KPI_Tasks_All.xlsx") {
   const rows = tasks.map((t) => ({
