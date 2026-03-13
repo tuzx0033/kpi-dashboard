@@ -3,18 +3,17 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { fetchStats, fetchKpiByAssignee, fetchTasks, fetchCompliance, triggerRefresh } from "./api";
+import { fetchStats, fetchKpiByAssignee, fetchTasks, fetchCompliance, triggerRefresh, triggerFullSync } from "./api";
 import StatCard from "./components/StatCard";
 import KpiTable from "./components/KpiTable";
 import TaskTable from "./components/TaskTable";
 import CompliancePanel from "./components/CompliancePanel";
 import DocsPanel from "./components/DocsPanel";
-import ConsolePanel from "./components/ConsolePanel";
 
 const PIE_COLORS = ["#3b82f6","#22c55e","#f59e0b","#ef4444","#a78bfa","#06b6d4","#f97316","#ec4899","#84cc16","#64748b"];
 
-const TF_LABELS = { "1.0": "Đúng hạn", "0.9": "Trễ 1-2 ngày", "0": "Trễ >2 ngày (0 điểm)" };
-const TF_COLORS = { "1.0": "#22c55e", "0.9": "#f59e0b", "0": "#ef4444" };
+const TF_LABELS = { "1.0": "Đúng hạn", "0.9": "Trễ 1-2 ngày", "0.8": "Trễ 3-5 ngày", "0.6": "Trễ >5 ngày" };
+const TF_COLORS = { "1.0": "#22c55e", "0.9": "#f59e0b", "0.8": "#f97316", "0.6": "#ef4444" };
 
 function Section({ title, children }) {
   return (
@@ -31,9 +30,10 @@ export default function App() {
   const [kpi, setKpi]               = useState([]);
   const [tasks, setTasks]           = useState([]);
   const [compliance, setCompliance] = useState(null);
-  const [loading, setLoading]       = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError]           = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [refreshing, setRefreshing]   = useState(false);
+  const [fullSyncing, setFullSyncing] = useState(false);
+  const [error, setError]             = useState(null);
   const [lastFetch, setLastFetch]   = useState(null);
   const [activeTab, setActiveTab]   = useState("overview"); // overview | compliance | tasks
 
@@ -82,6 +82,33 @@ export default function App() {
     } catch (e) {
       setError("Không thể kết nối server để làm mới");
       setRefreshing(false);
+    }
+  }, []);
+
+  // Nút Làm mới toàn thời gian: kéo TẤT CẢ tasks từ ClickUp → lưu DB → cập nhật cache
+  const handleFullSync = useCallback(async () => {
+    if (!window.confirm("Full sync sẽ kéo toàn bộ lịch sử tasks từ ClickUp, có thể mất vài phút. Tiếp tục?")) return;
+    setFullSyncing(true);
+    setError(null);
+    try {
+      await triggerFullSync();
+      // Poll mỗi 5s cho đến khi server báo loading=false
+      const poll = setInterval(async () => {
+        try {
+          const [s, k, t, c] = await Promise.all([
+            fetchStats(), fetchKpiByAssignee(), fetchTasks(), fetchCompliance(),
+          ]);
+          if (!t.loading) {
+            clearInterval(poll);
+            setStats(s); setKpi(k); setTasks(t.tasks || []); setCompliance(c);
+            setLastFetch(s.fetched_at || "");
+            setFullSyncing(false);
+          }
+        } catch { clearInterval(poll); setFullSyncing(false); }
+      }, 5000);
+    } catch (e) {
+      setError("Không thể kết nối server để full sync");
+      setFullSyncing(false);
     }
   }, []);
 
@@ -138,12 +165,20 @@ export default function App() {
           {lastFetch && (
             <span style={{ fontSize: 12, color: "#475569" }}>Cập nhật: {lastFetch}</span>
           )}
-          <ConsolePanel onSyncDone={() => load()} />
-          <button onClick={handleRefresh} disabled={refreshing}
+          <button onClick={handleRefresh} disabled={refreshing || fullSyncing}
             style={{ background: refreshing ? "#334155" : "#3b82f6", border: "none", borderRadius: 8,
-              padding: "7px 18px", color: "#fff", fontWeight: 600, cursor: refreshing ? "wait" : "pointer",
+              padding: "7px 18px", color: "#fff", fontWeight: 600,
+              cursor: (refreshing || fullSyncing) ? "wait" : "pointer",
               fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-            {refreshing ? "⏳ Đang tải..." : "🔄 Tuần này"}
+            {refreshing ? "⏳ Đang tải..." : "🔄 Làm mới"}
+          </button>
+          <button onClick={handleFullSync} disabled={fullSyncing || refreshing}
+            title="Kéo toàn bộ lịch sử tasks từ ClickUp về DB (mất vài phút)"
+            style={{ background: fullSyncing ? "#334155" : "#7c3aed", border: "none", borderRadius: 8,
+              padding: "7px 18px", color: "#fff", fontWeight: 600,
+              cursor: (fullSyncing || refreshing) ? "wait" : "pointer",
+              fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+            {fullSyncing ? "⏳ Đang sync..." : "🗄️ Sync toàn thời gian"}
           </button>
         </div>
       </header>
