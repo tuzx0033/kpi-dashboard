@@ -9,6 +9,7 @@ import KpiTable from "./components/KpiTable";
 import TaskTable from "./components/TaskTable";
 import CompliancePanel from "./components/CompliancePanel";
 import DocsPanel from "./components/DocsPanel";
+import ConsolePanel from "./components/ConsolePanel";
 
 const PIE_COLORS = ["#3b82f6","#22c55e","#f59e0b","#ef4444","#a78bfa","#06b6d4","#f97316","#ec4899","#84cc16","#64748b"];
 
@@ -137,11 +138,12 @@ export default function App() {
           {lastFetch && (
             <span style={{ fontSize: 12, color: "#475569" }}>Cập nhật: {lastFetch}</span>
           )}
+          <ConsolePanel onSyncDone={() => load()} />
           <button onClick={handleRefresh} disabled={refreshing}
             style={{ background: refreshing ? "#334155" : "#3b82f6", border: "none", borderRadius: 8,
               padding: "7px 18px", color: "#fff", fontWeight: 600, cursor: refreshing ? "wait" : "pointer",
               fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-            {refreshing ? "⏳ Đang tải..." : "🔄 Làm mới"}
+            {refreshing ? "⏳ Đang tải..." : "🔄 Tuần này"}
           </button>
         </div>
       </header>

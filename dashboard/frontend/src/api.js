@@ -14,6 +14,7 @@ export const fetchServerStatus  = ()              => axios.get(`${BASE}/api/stat
 export const triggerFullSync    = ()              => axios.get(`${BASE}/api/sync/full`).then(r => r.data);
 export const fetchSyncHistory   = ()              => axios.get(`${BASE}/api/sync/history`).then(r => r.data);
 export const fetchAllTasks      = ()              => axios.get(`${BASE}/api/tasks/all`).then(r => r.data);
+export const fetchLogs          = ()              => axios.get(`${BASE}/api/logs`).then(r => r.data);
 
 // Ping định kỳ để giữ Render free tier không ngủ (mỗi 10 phút)
 export const keepAlive = () => {

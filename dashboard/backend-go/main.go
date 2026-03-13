@@ -4,9 +4,66 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
+
+// ── Log Buffer: bắt tất cả log.Printf/Println → lưu vào bộ nhớ ───────────────
+
+type LogEntry struct {
+	Time    string `json:"time"`
+	Level   string `json:"level"`
+	Message string `json:"message"`
+}
+
+type logBufWriter struct {
+	mu      sync.RWMutex
+	entries []LogEntry
+}
+
+var logBuf = &logBufWriter{}
+
+func (lw *logBufWriter) Write(p []byte) (n int, err error) {
+	msg := strings.TrimSpace(string(p))
+	if msg != "" {
+		loc, _ := time.LoadLocation("Asia/Ho_Chi_Minh")
+		lower := strings.ToLower(msg)
+		level := "info"
+		if strings.Contains(lower, "lỗi") || strings.Contains(lower, "error") || strings.Contains(lower, "fatal") {
+			level = "error"
+		} else if strings.Contains(lower, "warn") || strings.Contains(lower, "skip") {
+			level = "warn"
+		} else if strings.Contains(lower, "xong") || strings.Contains(lower, "ok") || strings.Contains(lower, "live") || strings.Contains(lower, "thành công") {
+			level = "success"
+		}
+		lw.mu.Lock()
+		lw.entries = append(lw.entries, LogEntry{
+			Time:    time.Now().In(loc).Format("15:04:05"),
+			Level:   level,
+			Message: msg,
+		})
+		// Giữ tối đa 500 dòng log gần nhất
+		if len(lw.entries) > 500 {
+			lw.entries = lw.entries[len(lw.entries)-500:]
+		}
+		lw.mu.Unlock()
+	}
+	return os.Stderr.Write(p)
+}
+
+func handleLogs(w http.ResponseWriter, r *http.Request) {
+	// Hỗ trợ lọc theo offset: ?from=50 → trả từ dòng 50 trở đi
+	lw := logBuf
+	lw.mu.RLock()
+	defer lw.mu.RUnlock()
+	writeJSON(w, map[string]interface{}{
+		"logs":    lw.entries,
+		"total":   len(lw.entries),
+		"loading": cache.isLoading,
+	})
+}
 
 // ── In-memory cache ───────────────────────────────────────────────────────────
 
@@ -275,6 +332,10 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 func main() {
+	// Redirect tất cả log → logBuf (vừa lưu vào bộ nhớ, vừa in ra stderr)
+	log.SetOutput(logBuf)
+	log.SetFlags(0)
+
 	log.Println("🚀 KPI Dashboard Server (Go) starting on :8080")
 
 	// Init DB
@@ -311,6 +372,7 @@ func main() {
 	mux.HandleFunc("/api/sync/full", withCORS(handleFullSync))
 	mux.HandleFunc("/api/sync/history", withCORS(handleSyncHistory))
 	mux.HandleFunc("/api/status", withCORS(handleStatus))
+	mux.HandleFunc("/api/logs", withCORS(handleLogs))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
