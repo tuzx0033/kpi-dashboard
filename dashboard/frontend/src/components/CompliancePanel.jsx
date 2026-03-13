@@ -88,13 +88,17 @@ export default function CompliancePanel({ data, loading }) {
           <ScoreGauge rate={compliance_rate} />
           <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
             {[
-              { label: "✅ Task đầy đủ", value: tasks_clean, color: "#22c55e" },
-              { label: "🔴 Chặn tính điểm", value: (task_issues||[]).filter(t=>t.score_blocked).length, color: "#ef4444" },
-              { label: "⚠️ Có vấn đề khác", value: tasks_with_issues - (task_issues||[]).filter(t=>t.score_blocked).length, color: "#f59e0b" },
-              { label: "📋 Tổng tasks", value: total_tasks, color: "#94a3b8" },
+              { label: "✅ Có điểm KPI",        value: tasks_clean,               color: "#22c55e",
+                tip: "Task tính được KpiScore (có Weight). Có thể vẫn còn lỗi dữ liệu." },
+              { label: "❌ Không có điểm",       value: total_tasks - tasks_clean,  color: "#ef4444",
+                tip: "Task thiếu Weight → không tính được điểm." },
+              { label: "⚠️ Có lỗi dữ liệu",     value: tasks_with_issues,          color: "#f59e0b",
+                tip: "Task vi phạm ít nhất 1 quy tắc (kể cả task đã có điểm). Có thể trùng với nhóm trên." },
+              { label: "📋 Tổng tasks",          value: total_tasks,                color: "#94a3b8",
+                tip: "✅ Có điểm + ❌ Không có điểm = Tổng tasks." },
             ].map(item => (
-              <div key={item.label} style={{ display: "flex", justifyContent: "space-between",
-                background: "#0f172a", borderRadius: 6, padding: "5px 10px" }}>
+              <div key={item.label} title={item.tip} style={{ display: "flex", justifyContent: "space-between",
+                background: "#0f172a", borderRadius: 6, padding: "5px 10px", cursor: "help" }}>
                 <span style={{ fontSize: 12, color: "#94a3b8" }}>{item.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: item.color }}>{item.value}</span>
               </div>
@@ -338,7 +342,7 @@ function CleanTasksTab({ tasks, search, setSearch, page, setPage, pageSize }) {
   const paged      = filtered.slice(page * pageSize, (page + 1) * pageSize);
   const totalPages = Math.ceil(filtered.length / pageSize);
 
-  const tfColor = tf => tf === 1 ? "#22c55e" : tf >= 0.9 ? "#f59e0b" : "#ef4444";
+  const tfColor = tf => tf === 1 ? "#22c55e" : tf >= 0.9 ? "#f59e0b" : tf >= 0.8 ? "#f97316" : "#ef4444";
   const scoreColor = (score, weight) => {
     if (!score || !weight) return "#64748b";
     const r = score / weight;
