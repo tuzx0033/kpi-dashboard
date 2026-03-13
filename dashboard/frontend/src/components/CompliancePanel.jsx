@@ -88,14 +88,14 @@ export default function CompliancePanel({ data, loading }) {
           <ScoreGauge rate={compliance_rate} />
           <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
             {[
-              { label: "✅ Có điểm KPI",        value: tasks_clean,               color: "#22c55e",
-                tip: "Task tính được KpiScore (có Weight). Có thể vẫn còn lỗi dữ liệu." },
-              { label: "❌ Không có điểm",       value: total_tasks - tasks_clean,  color: "#ef4444",
-                tip: "Task thiếu Weight → không tính được điểm." },
-              { label: "⚠️ Có lỗi dữ liệu",     value: tasks_with_issues,          color: "#f59e0b",
-                tip: "Task vi phạm ít nhất 1 quy tắc (kể cả task đã có điểm). Có thể trùng với nhóm trên." },
+              { label: "✅ Tính được điểm",      value: tasks_clean,               color: "#22c55e",
+                tip: "Task có Weight → hệ thống tính được KpiScore." },
+              { label: "❌ Chưa tính được điểm", value: total_tasks - tasks_clean,  color: "#ef4444",
+                tip: "Task thiếu Weight hoặc Points → KpiScore = 0, không vào KPI." },
+              { label: "⚠️ Thiếu dữ liệu",      value: tasks_with_issues,          color: "#f59e0b",
+                tip: "Thiếu ít nhất 1 trường (Due date, Quality, Assignee...). Có thể trùng với nhóm trên." },
               { label: "📋 Tổng tasks",          value: total_tasks,                color: "#94a3b8",
-                tip: "✅ Có điểm + ❌ Không có điểm = Tổng tasks." },
+                tip: "✅ Tính được điểm + ❌ Chưa tính được điểm = Tổng." },
             ].map(item => (
               <div key={item.label} title={item.tip} style={{ display: "flex", justifyContent: "space-between",
                 background: "#0f172a", borderRadius: 6, padding: "5px 10px", cursor: "help" }}>
@@ -185,8 +185,8 @@ export default function CompliancePanel({ data, loading }) {
         {/* Tab header */}
         <div style={{ display: "flex", borderBottom: "1px solid #334155" }}>
           {[
-            { id: "issues", label: `🔍 Cần bổ sung`, count: filtered.length },
-            { id: "clean",  label: `✅ Đã đầy đủ`,   count: tasks_clean },
+            { id: "issues", label: `⚠️ Thiếu dữ liệu`, count: filtered.length },
+            { id: "clean",  label: `✅ Dữ liệu đủ`,   count: tasks_clean },
           ].map(tab => (
             <button key={tab.id} onClick={() => setViewTab(tab.id)}
               style={{ flex: 1, padding: "14px 20px", background: "transparent", border: "none",
