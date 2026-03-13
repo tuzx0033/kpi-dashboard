@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { fetchAllTasks } from "../api";
+import { exportTasksToExcel } from "../utils/exportExcel";
 
 const STATUS_COLOR = {
   closed: "#22c55e", "in progress": "#3b82f6", open: "#94a3b8",
@@ -25,7 +27,22 @@ export default function TaskTable({ tasks, loading }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
+  const [exporting, setExporting] = useState(false);
   const PAGE_SIZE = 20;
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetchAllTasks();
+      const allTasks = res.tasks || [];
+      const now = new Date().toISOString().slice(0, 10);
+      exportTasksToExcel(allTasks, `KPI_Tasks_All_${now}.xlsx`);
+    } catch (e) {
+      alert("Không thể tải dữ liệu để xuất Excel: " + e.message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const statuses = useMemo(() => {
     const s = new Set((tasks || []).map(t => t.status).filter(Boolean));
@@ -49,6 +66,12 @@ export default function TaskTable({ tasks, loading }) {
       {/* Header + filters */}
       <div style={{ padding: "16px 20px", borderBottom: "1px solid #334155", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <span style={{ fontWeight: 600, fontSize: 15, marginRight: "auto" }}>📋 Danh sách Tasks ({filtered.length})</span>
+        <button onClick={handleExport} disabled={exporting}
+          style={{ background: exporting ? "#334155" : "#16a34a", border: "none", borderRadius: 8,
+            padding: "6px 16px", color: "#fff", fontWeight: 600, cursor: exporting ? "wait" : "pointer",
+            fontSize: 13, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+          {exporting ? "⏳ Đang xuất..." : "📥 Xuất Excel (toàn thời gian)"}
+        </button>
         <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
           placeholder="🔍 Tìm task, assignee..."
           style={{ background: "#0f172a", border: "1px solid #475569", borderRadius: 8, padding: "6px 12px",
